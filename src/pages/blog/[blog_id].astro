@@ -1,0 +1,24 @@
+---
+import { getBlogs, getNotionBlocksByPage, getPageProperties } from '../../utils/notion_client'
+import {parsePageProperties} from '../../utils/property_parser'
+import Layout from '../../layouts/main.astro'
+export async function getStaticPaths() {
+    const blogs = await getBlogs();
+    const paramsData = blogs.map(blog => ({params : {
+        blog_id : blog.id
+    }}))
+    return paramsData;
+}
+const { blog_id } = Astro.params
+
+const blogBody = await getNotionBlocksByPage(blog_id)
+const pageProperties = await getPageProperties(blog_id)
+const { name, featuredImage } = parsePageProperties(pageProperties)
+
+---
+<Layout>
+    <img class="w-full h-80 image-cover" src={featuredImage} />
+    <h1 class="text-2xl font-bold text-center">{name}</h1>
+    <div class="prose prose-md mt-10" set:html={blogBody}>
+    </div>
+</Layout>
